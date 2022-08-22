@@ -16,9 +16,10 @@ import {
 import { blueColorApp, textLight } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 import ApiRequest from "../../utils/api/Main/ApiRequest";
-import { useAppSelector } from "../../redux/store/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import { RootStackScreenProps } from "../../navigation/types";
 import Spinner from "react-native-loading-spinner-overlay/lib";
+import { logOut } from "../../redux/features/auth/authSlices";
 
 export default function ScanfQrCode({
   navigation,
@@ -31,6 +32,8 @@ export default function ScanfQrCode({
   const [viewCamera, setViewCamera] = useState<boolean>(true);
 
   const { token } = useAppSelector((state) => state.auth);
+
+  const dispatch = useAppDispatch();
 
   const askForCameraPermission = () => {
     (async () => {
@@ -88,7 +91,8 @@ export default function ScanfQrCode({
           }
         })
         .catch((error) => {
-          console.log(error);
+          dispatch(logOut());
+          console.log("error scanf qr :", error);
           setLoading(false);
         });
     }
@@ -122,7 +126,7 @@ export default function ScanfQrCode({
           position: "absolute",
           width: "100%",
           alignItems: "center",
-          top: 40,
+          top: 10,
         }}
         onPress={() => {
           if (scanned) {
@@ -136,8 +140,8 @@ export default function ScanfQrCode({
         <View
           style={{
             margin: 10,
-            backgroundColor: "rgba(255,255,255,0.6)",
-            width: 160,
+            backgroundColor: "rgba(0,0,0,0.4)",
+            width: 240,
             height: 40,
             alignItems: "center",
             justifyContent: "center",
@@ -146,7 +150,7 @@ export default function ScanfQrCode({
           }}
         >
           <Text style={{ color: "#fff" }}>
-            {!qrCode ? "Quét mã đồng hồ " : "Quét lại"}
+            {!qrCode ? "Vui lòng quét mã QR đồng hồ " : "Quét lại"}
           </Text>
           {!qrCode && <ActivityIndicator color={blueColorApp} />}
         </View>

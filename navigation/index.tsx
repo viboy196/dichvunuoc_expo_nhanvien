@@ -56,7 +56,12 @@ function RootNavigator() {
   const { token } = useAppSelector((state) => state.auth);
   if (token) {
     return (
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: blueColorApp },
+          headerTintColor: "#fff",
+        }}
+      >
         <Stack.Screen
           name="Main"
           component={MainScreen}
@@ -68,10 +73,6 @@ function RootNavigator() {
           component={CameraWaterScreen}
           options={({ route }) => ({
             title: "Chụp ảnh mặt đồng hồ nước",
-            headerStyle: {
-              backgroundColor: blueColorApp,
-            },
-            headerTintColor: "#fff",
           })}
         />
         <Stack.Screen
@@ -79,10 +80,6 @@ function RootNavigator() {
           component={ScanfQrCodeScreen}
           options={{
             title: "Quét mã đồng hồ nước",
-            headerStyle: {
-              backgroundColor: blueColorApp,
-            },
-            headerTintColor: "#fff",
           }}
         />
 
@@ -91,11 +88,6 @@ function RootNavigator() {
           component={InfoDetailScreen}
           options={({ route }) => ({
             title: `Thông tin cá nhân`,
-            headerStyle: { backgroundColor: blueColorApp },
-            headerTintColor: "#fff",
-            headerTitleStyle: {
-              fontWeight: "bold",
-            },
           })}
         />
         <Stack.Screen

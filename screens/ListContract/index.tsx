@@ -26,7 +26,7 @@ const fields = [
   { key: "unitTypeId", title: "Loại hình đơn vị", width: 350 },
   { key: "waterMeterCode", title: "Mã đồng hồ nước", width: 150 },
   { key: "status", title: "Trạng thái", width: 100 },
-  { key: "manipulation", title: "Thao tác", width: 550 },
+  { key: "manipulation", title: "Thao tác", width: 250 },
 ];
 export default function ListConTract({
   navigation,

@@ -101,6 +101,7 @@ export default function Login({ navigation }: RootLoginProps<"one">) {
             }
             dispatch(setState({ input: state }));
           } else {
+            setLoading(false);
             setTextError(res.errorMessage);
           }
         })
@@ -164,9 +165,11 @@ export default function Login({ navigation }: RootLoginProps<"one">) {
                 Ghi nhớ tài Khoản
               </Text>
             </View>
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text style={Styles.text_Error}>{textError}</Text>
+            </View>
           </View>
 
-          <Text style={Styles.text_Error}>{textError}</Text>
           <View
             style={{
               width: Layout.window.width - 20,

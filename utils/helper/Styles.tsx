@@ -62,7 +62,7 @@ export const Styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
   },
-  text_Error: { color: "red", position: "absolute", bottom: -25 },
+  text_Error: { color: "red" },
   view_Button_Big: {
     width: Layout.window.width - 40,
     height: 60,

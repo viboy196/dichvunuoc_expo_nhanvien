@@ -27,6 +27,7 @@ export default function InfoDetail() {
           dispatch(logOut());
         });
     }
+    setLoading(false);
   }, [dispatch, userName, token]);
   return (
     <View style={{ flex: 1 }}>
@@ -45,7 +46,7 @@ export default function InfoDetail() {
           />
         </View>
         <View style={styles.viewItemText}>
-          <Text style={styles.itemText}> Số điện thoại </Text>
+          <Text style={styles.itemText}> Tên tài khoản </Text>
           <Text style={{ color: textLight, fontSize: 16 }}>
             {" "}
             {userDetail.userName}

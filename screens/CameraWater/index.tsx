@@ -9,6 +9,10 @@ import {
   View,
   Image,
   Alert,
+  ScrollView,
+  Keyboard,
+  KeyboardEvent,
+  Platform,
 } from "react-native";
 
 import * as FileSystem from "expo-file-system";
@@ -27,6 +31,8 @@ export default function CameraWaterScreen({
   const { waterUserName, waterMeterCode, waterUserId, waterUserAddress } =
     route.params;
   const { token } = useAppSelector((state) => state.auth);
+  const keyboardHeight = useKeyboard();
+  console.log("keyboardHeight", keyboardHeight);
 
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
@@ -37,10 +43,14 @@ export default function CameraWaterScreen({
 
   const [textChiSo, onChangeTextChiSo] = React.useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [inputFocus, setInputFocus] = useState<boolean>(false);
 
   useEffect(() => {
-    if (permission && !permission.granted) {
-      // Camera permissions are not granted yet
+    // @ts-ignore
+    if (permission === undefined) {
+      requestPermission();
+    }
+    if (!permission?.granted) {
       requestPermission();
     }
   }, []);
@@ -98,12 +108,25 @@ export default function CameraWaterScreen({
 
   if (base64Image) {
     return (
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
         <View style={{ flex: 1 }}>
           <Image
             // source={{uri: photoPath}}
             source={{ uri: `data:image/jpeg;base64,${base64Image}` }}
-            style={[{ flex: 1 }, { backgroundColor: "black" }]}
+            resizeMode={"cover"}
+            style={[
+              {
+                width: Layout.window.width,
+                height: inputFocus
+                  ? (4 * Layout.window.width) / 3
+                  : Layout.window.height - 20,
+              },
+              { backgroundColor: "black" },
+            ]}
           />
           <TouchableOpacity
             onPress={() => {
@@ -112,6 +135,7 @@ export default function CameraWaterScreen({
             style={{
               position: "absolute",
               right: 0,
+
               justifyContent: "flex-end",
             }}
           >
@@ -129,12 +153,43 @@ export default function CameraWaterScreen({
               <Text style={{ color: "#fff" }}>Chụp lại</Text>
             </View>
           </TouchableOpacity>
-          <View style={{ position: "absolute", bottom: 20 }}>
+          <TouchableOpacity
+            onPress={() => {
+              Keyboard.dismiss();
+            }}
+            style={{
+              position: "absolute",
+              left: 0,
+
+              justifyContent: "flex-end",
+            }}
+          >
+            <View
+              style={{
+                margin: 10,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                width: 120,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 10,
+              }}
+            >
+              <Text style={{ color: "#fff" }}>xong</Text>
+            </View>
+          </TouchableOpacity>
+          <View
+            style={{
+              position: "absolute",
+
+              bottom: Platform.OS === "ios" ? keyboardHeight + 20 : 20,
+            }}
+          >
             <View
               style={{
                 width: Layout.window.width - 20,
                 padding: 10,
-                backgroundColor: "rgba(255,255,255,0.6)",
+                backgroundColor: "rgba(255,255,255,0.5)",
                 borderRadius: 10,
                 marginHorizontal: 10,
               }}
@@ -181,7 +236,7 @@ export default function CameraWaterScreen({
               style={{
                 width: Layout.window.width - 20,
                 padding: 10,
-                backgroundColor: "rgba(255,255,255,0.6)",
+                backgroundColor: "rgba(255,255,255,0.5)",
                 borderRadius: 10,
                 margin: 10,
               }}
@@ -190,7 +245,7 @@ export default function CameraWaterScreen({
                 placeholder={"chỉ số đồng hồ"}
                 onChangeText={onChangeTextChiSo}
                 value={textChiSo}
-                keyboardType={"numeric"}
+                keyboardType="numeric"
                 style={{
                   backgroundColor: "rgba(0,0,0,0.2)",
                   marginBottom: 10,
@@ -198,6 +253,14 @@ export default function CameraWaterScreen({
                 outlineColor={"rgba(0,0,0,0.2)"}
                 activeOutlineColor={blueColorApp}
                 mode={"outlined"}
+                onFocus={() => {
+                  console.log("forcus vào đây");
+                  setInputFocus(true);
+                }}
+                onBlur={() => {
+                  console.log("forcus ra");
+                  setInputFocus(false);
+                }}
               />
               <Button
                 title={"Ghi nhận"}
@@ -215,7 +278,10 @@ export default function CameraWaterScreen({
     <View style={styles.container}>
       <Spinner visible={loading} textStyle={{ color: "#FFF" }} />
       <Camera
-        style={styles.camera}
+        style={{
+          width: Layout.window.width,
+          height: (4 * Layout.window.width) / 3,
+        }}
         type={type}
         ref={(ref) => {
           setCamera(ref);
@@ -322,3 +388,33 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
 });
+
+export const useKeyboard = () => {
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  function onKeyboardDidShow(e: KeyboardEvent) {
+    // Remove type here if not using TypeScript
+    setKeyboardHeight(e.endCoordinates.height);
+  }
+
+  function onKeyboardDidHide() {
+    setKeyboardHeight(0);
+  }
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      "keyboardDidShow",
+      onKeyboardDidShow
+    );
+    const hideSubscription = Keyboard.addListener(
+      "keyboardDidHide",
+      onKeyboardDidHide
+    );
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  return keyboardHeight;
+};

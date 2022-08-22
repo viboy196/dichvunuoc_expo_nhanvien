@@ -5,8 +5,10 @@ import {
   StyleSheet,
   Button,
   Alert,
+  Modal,
+  Pressable,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Table, Row, Rows } from "react-native-table-component";
 import { blueColorApp, textLight } from "../../constants/Colors";
@@ -15,6 +17,10 @@ import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import { logOut } from "../../redux/features/auth/authSlices";
 import { TollAreaShow, UnitTypeShow } from "../../components/CompomentHelper";
 import Spinner from "react-native-loading-spinner-overlay/lib";
+import Layout from "../../constants/Layout";
+import ModalImage from "./ModalImage";
+import { RootStackScreenProps } from "../../navigation/types";
+
 const fields = [
   { key: "STT", title: "STT", width: 40 },
   { key: "code", title: "Mã hợp đồng", width: 100 },
@@ -26,7 +32,9 @@ const fields = [
   { key: "updatedBy", title: "Người đo", width: 200 },
   { key: "manipulation", title: "Thao tác", width: 150 },
 ];
-export default function ListWaterUser() {
+export default function ListWaterUser({
+  navigation,
+}: RootStackScreenProps<"ListWaterIndex">) {
   const dispatch = useAppDispatch();
   const tableHead = fields.map((field) => field.title);
   const widthArr = fields.map((field) => field.width);
@@ -38,8 +46,19 @@ export default function ListWaterUser() {
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (token)
+  const [visibleModaImage, setVisibleModaImage] = React.useState(false);
+
+  const [urlImage, setUrlImage] = React.useState<string>();
+
+  const showModal = (url: string) => {
+    setUrlImage(url);
+    setVisibleModaImage(true);
+  };
+
+  const hideModal = () => setVisibleModaImage(false);
+  const fetchData = useCallback(() => {
+    if (token) {
+      setLoading(true);
       ApiRequest.getWaterIndexPage({
         token: token,
         year: new Date().getFullYear(),
@@ -99,23 +118,31 @@ export default function ListWaterUser() {
                         marginTop: 5,
                       }}
                     >
+                      <View style={{ width: 5 }} />
+
                       <Button
-                        title="Chi tiết"
-                        color={"#20232a"}
+                        title="Ảnh"
+                        disabled={row.image === undefined || row.image === null}
+                        color={"tomato"}
                         onPress={() => {
-                          Alert.alert("thông tin đang cập nhật tính năng");
+                          showModal(`http://lamviec.dichvunuoc.vn/resource/${row.image}`);
                         }}
                       />
                       <View style={{ width: 5 }} />
 
                       <Button
-                        title="Ảnh"
-                        color={"tomato"}
+                        title="Ghi chỉ số"
+                        color={"#20232a"}
                         onPress={() => {
-                          Alert.alert("thông tin đang cập nhật tính năng");
+                          navigation.navigate("CameraWaterScreen", {
+                            waterUserId: row.waterUser.id,
+                            waterMeterCode: row.waterUser.waterMeterCode,
+                            waterUserAddress: row.waterUser.address,
+                            waterUserName: row.waterUser.name,
+                          });
                         }}
                       />
-                      <View style={{ width: 25 }} />
+                      <View style={{ width: 15 }} />
                     </View>
                   );
                 }
@@ -131,17 +158,26 @@ export default function ListWaterUser() {
           console.log("error", error);
           dispatch(logOut());
         });
+    }
   }, [token]);
-  useEffect(() => {});
+  useEffect(() => {
+    fetchData();
+    const willFocusSubscription = navigation.addListener("focus", () => {
+      fetchData();
+    });
+
+    return willFocusSubscription;
+  }, [fetchData, navigation]);
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Spinner visible={loading} textStyle={{ color: "#FFF" }} />
-      <View style={{ width: 150, padding: 10 }}>
-        <Button title="+ Thêm " color={"green"} onPress={() => {
-            Alert.alert('')
-        }} />
-      </View>
-      <ScrollView horizontal={true} style={{ paddingHorizontal: 10 }}>
+      <ModalImage
+        imageUri={urlImage}
+        hideModal={hideModal}
+        visibleModaImage={visibleModaImage}
+      />
+
+      <ScrollView horizontal={true} style={{}}>
         <View>
           <Table borderStyle={{ borderColor: "#C1C0B9" }}>
             <Row
@@ -199,5 +235,15 @@ const styles = StyleSheet.create({
   row: {
     height: 40,
     backgroundColor: "#2c3445",
+  },
+
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });

@@ -16,7 +16,8 @@ export default function TakePickture({
 }) {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   useEffect(() => {
-    if (permission && !permission.granted) {
+    // @ts-ignore
+    if (!permission.granted) {
       // Camera permissions are not granted yet
       requestPermission();
     }
