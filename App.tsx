@@ -6,7 +6,7 @@ import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
 import TestQR from "./screens/CameraWater/Test";
-import UseWaterRegister from "./screens/UseWaterRegister";
+import TestScreen from "./screens/test/test";
 
 // redux
 import { Provider } from "react-redux";
@@ -24,8 +24,8 @@ export default function App() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <SafeAreaProvider>
-            <Navigation colorScheme={colorScheme} />
-            {/* <UseWaterRegister /> */}
+            {/* <Navigation colorScheme={colorScheme} /> */}
+            <TestScreen />
             <StatusBar />
           </SafeAreaProvider>
         </PersistGate>
