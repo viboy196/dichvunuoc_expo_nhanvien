@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dichvunuoc: Nhân viên",
     "slug": "dichvunuoc_nhanvien",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/LogoApp/Logo_256_256.png",
     "scheme": "myapp",
@@ -20,14 +20,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dichvunuoc.nguoidung"
+      "bundleIdentifier": "com.dichvunuoc.nhanvien",
+      "buildNumber" : "2"
     },
     "android": {
       "adaptiveIcon": {
-        "image": "./assets/images/LogoApp/Logo_256_256.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.viboy196.dichvunuoc_nhanvien"
+      "package": "com.viboy196.dichvunuoc_nhanvien",
+      "versionCode": 1
     },
     "web": {
       "image": "./assets/images/splash.png"

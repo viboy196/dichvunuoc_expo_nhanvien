@@ -40,6 +40,7 @@ export default function Login({ navigation }: RootLoginProps<"one">) {
   const [textError, setTextError] = useState<string | undefined>();
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPass, setShowPass] = useState<boolean>(true);
   const [checked, setChecked] = useState(checkedAuth);
 
   const dispatch = useAppDispatch();
@@ -139,17 +140,44 @@ export default function Login({ navigation }: RootLoginProps<"one">) {
             value={textUsername}
             onChangeText={setTextUsername}
           />
-          <View>
+          <View
+            style={{
+              alignItems: "center",
+              flexDirection: "row",
+              width: Layout.window.width - 20,
+              margin: 5,
+              backgroundColor: "#f6f6f6",
+              height: 70,
+            }}
+          >
             <TextInput
-              style={{ width: Layout.window.width - 20, margin: 5 }}
+              style={{ width: Layout.window.width - 70 }}
               placeholder={"Mật khẩu"}
               outlineColor={"rgba(0,0,0,0)"}
               activeOutlineColor={blueColorApp}
               mode={"outlined"}
               value={textPassword}
               onChangeText={setTextPassword}
-              secureTextEntry={true}
+              secureTextEntry={showPass}
             />
+
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                height: 50,
+                width: 50,
+                right: 0,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => setShowPass((old) => !old)}
+            >
+              <Ionicons
+                name={showPass ? "eye" : "eye-off"}
+                size={24}
+                color={blueColorApp}
+              />
+            </TouchableOpacity>
           </View>
 
           <View style={Styles.Empty}>
