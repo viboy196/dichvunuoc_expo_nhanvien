@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -14,18 +15,28 @@ import { Picker } from "@react-native-picker/picker";
 import ApiRequest from "../../utils/api/Main/ApiRequest";
 import Spinner from "react-native-loading-spinner-overlay/lib";
 import { WaterUser } from "../../utils/api/apiTypes";
-import { useAppSelector } from "../../redux/store/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import TakePickture, { ImageItem } from "../../components/TakePicture";
 import { RootStackScreenProps } from "../../navigation/types";
+import SelectGPS from "../../components/SelectGPS";
+import { Region } from "react-native-maps";
+import Device from "expo-device";
+import * as FileSystem from "expo-file-system";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as Location from "expo-location";
+import { logOut } from "../../redux/features/auth/authSlices";
+
 // import fs from 'react-native-fs';
 export default function DetailContract({
   route,
 }: RootStackScreenProps<"DetailContract">) {
   const { token } = useAppSelector((state) => state.auth);
   const [waterUser, setWaterUser] = useState<WaterUser>(route.params.waterUser);
+  console.log("waterUser", waterUser);
 
   const [listBase64Image, setListBase64Image] = useState<Array<string>>([]);
-  console.log("waterUser", waterUser);
+  const [listImage, setListImage] = useState<Array<string>>([]);
+
   const [notificationMethodTypeChecker, setNotificationMethodTypeChecker] =
     useState<{
       Zalo?: boolean;
@@ -38,7 +49,18 @@ export default function DetailContract({
     EWallet?: Boolean;
     Manual?: Boolean;
   }>();
+
+  const dispatch = useAppDispatch();
   useEffect(() => {
+    if (waterUser.images) {
+      let arr = (waterUser.images as string).split(";");
+      arr.forEach(async (element, index) => {
+        const url = `http://lamviec.dichvunuoc.vn/resource/${element}`;
+        console.log("imageurl", url);
+
+        setListImage((old) => [...old, url]);
+      });
+    }
     const Zalo =
       waterUser.notificationMethod?.search("Zalo") !== undefined &&
       waterUser.notificationMethod?.search("Zalo") > -1;
@@ -81,6 +103,9 @@ export default function DetailContract({
   const [ListTollArea, setListTollArea] = useState<Array<any>>();
   const [openTakePicture, setOpenTakePicture] = useState<Boolean>(false);
 
+  const [openScreenGPS, setOpenScreenGPS] = useState<Boolean>(false);
+  const [region, setRegion] = useState<Region>();
+
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     if (token) {
@@ -102,7 +127,38 @@ export default function DetailContract({
     }
   }, [token]);
 
-  const UseWaterUpdate = useCallback(() => {
+  const UseWaterPostImage = () => {
+    setLoading(true);
+    console.log(
+      "UseWaterPostImage waterUser.id",
+      waterUser.id,
+      listBase64Image.length
+    );
+
+    if (token && waterUser.id && listBase64Image.length > 0) {
+      ApiRequest.PostWaterUserUpdateImage(
+        {
+          id: waterUser.id,
+          images: listBase64Image,
+        },
+        token
+      )
+        .then((data) => {
+          if (data.code === "00") {
+          } else {
+            Alert.alert("Thông báo", data.errorMessage);
+          }
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false);
+          Alert.alert("Lỗi", error);
+          //dispatch(logOut());
+        });
+    }
+  };
+  const UseWaterUpdate = () => {
+    UseWaterPostImage();
     if (waterUser.code === undefined || waterUser.code === "") {
       Alert.alert("Trường Mã hợp đồng không được để trống");
       return;
@@ -162,36 +218,11 @@ export default function DetailContract({
         .catch(() => {
           setLoading(false);
           Alert.alert("Lỗi", "có lỗi sảy ra");
+          dispatch(logOut());
         });
     }
-  }, [notificationMethodTypeChecker, paymentMethodChecker, token, waterUser]);
+  };
 
-  const UseWaterPostImage = useCallback(() => {
-    setLoading(true);
-    console.log("waterUser.id", waterUser.id);
-
-    if (token && waterUser.id && listBase64Image) {
-      ApiRequest.PostWaterUserUpdateImage(
-        {
-          id: waterUser.id,
-          images: listBase64Image,
-        },
-        token
-      )
-        .then((data) => {
-          if (data.code === "00") {
-            Alert.alert("Thông báo", "Cập Nhật Ảnh Thành công");
-          } else {
-            Alert.alert("Thông báo", data.errorMessage);
-          }
-          setLoading(false);
-        })
-        .catch(() => {
-          setLoading(false);
-          Alert.alert("Lỗi", "có lỗi sảy ra");
-        });
-    }
-  }, [listBase64Image, token, waterUser.id]);
   if (openTakePicture) {
     return (
       <TakePickture
@@ -200,6 +231,40 @@ export default function DetailContract({
         }}
         listBase64Image={listBase64Image}
         setListBase64Image={setListBase64Image}
+      />
+    );
+  }
+  if (openScreenGPS) {
+    return (
+      <SelectGPS
+        name={waterUser.name}
+        region={region}
+        setRegion={setRegion}
+        onPressDone={() => {
+          Alert.alert("Xác Nhận", "Xác nhận vị trí được chọn", [
+            {
+              text: "Cancel",
+              onPress: () => console.log("Cancel Pressed"),
+              style: "cancel",
+            },
+            {
+              text: "OK",
+              onPress: () => {
+                setWaterUser((old) => {
+                  setOpenScreenGPS(false);
+                  return {
+                    ...old,
+                    gps: `${region?.latitude},${region?.longitude}`,
+                  };
+                });
+              },
+            },
+          ]);
+        }}
+        onPressClose={() => {
+          setOpenScreenGPS(false);
+        }}
+        gps={waterUser.gps ? waterUser.gps : undefined}
       />
     );
   }
@@ -550,6 +615,26 @@ export default function DetailContract({
               />
             </View>
           </View>
+
+          {/* GPS  */}
+          <View style={{ width: layout.window.width - 20 }}>
+            <Text style={{ marginVertical: 5 }}>GPS</Text>
+            <View style={styles.viewInput}>
+              <View style={{ backgroundColor: "tranparents" }}>
+                <Text style={{ paddingVertical: 5 }}>{waterUser.gps}</Text>
+                <Button
+                  mode="contained"
+                  onPress={() => {
+                    setOpenScreenGPS(true);
+                  }}
+                  color={blueColorApp}
+                >
+                  Chọn vị trí
+                </Button>
+              </View>
+            </View>
+          </View>
+
           {/* Tài Khoản đại diện  */}
           <View style={{ width: layout.window.width - 20 }}>
             <Text style={{ marginVertical: 5 }}>Tài khoản đại diện</Text>
@@ -579,19 +664,37 @@ export default function DetailContract({
                     onPress={() => {
                       setOpenTakePicture(true);
                     }}
+                    color={blueColorApp}
                   >
                     Chụp Ảnh
                   </Button>
                 </View>
-                {listBase64Image.length > 0 && (
-                  <View style={{ width: 120 }}>
-                    <Button mode="contained" onPress={UseWaterPostImage}>
-                      Ghi Nhận Ảnh
-                    </Button>
-                  </View>
-                )}
               </View>
+              {listImage && listBase64Image.length == 0 && (
+                <FlatList
+                  horizontal={true}
+                  data={listImage}
+                  renderItem={({ item, index }) => (
+                    <ImageItem
+                      uri={item}
+                      // onPressDelete={() => {
+                      //   console.log("index", index);
 
+                      //   setListBase64Image((old) => {
+                      //     const newold = [];
+                      //     for (var i: number = 0; i < old.length; i++) {
+                      //       if (i !== index) {
+                      //         newold.push(old[i]);
+                      //       }
+                      //     }
+
+                      //     return newold;
+                      //   });
+                      // }}
+                    />
+                  )}
+                />
+              )}
               <FlatList
                 horizontal={true}
                 data={listBase64Image}

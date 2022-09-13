@@ -16,8 +16,11 @@ export default function TakePickture({
 }) {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   useEffect(() => {
+    if (permission === undefined) {
+      requestPermission();
+    }
     // @ts-ignore
-    if (!permission.granted) {
+    if (!permission?.granted) {
       // Camera permissions are not granted yet
       requestPermission();
     }
@@ -109,12 +112,48 @@ export default function TakePickture({
 }
 export const ImageItem = ({
   base64Image,
+  uri,
   onPressDelete,
 }: {
   base64Image?: string;
+  uri?: string;
   onPressItem?: () => void;
   onPressDelete?: () => void;
 }) => {
+  if (uri) {
+    console.log("uri", uri);
+
+    return (
+      <View>
+        <Image
+          // source={{uri: photoPath}}
+          source={{ uri: uri ? `${uri}?time=${new Date()}` : undefined }}
+          style={{ width: 100, height: 133 }}
+        />
+        <TouchableOpacity
+          onPress={onPressDelete}
+          style={{
+            position: "absolute",
+            top: 5,
+            right: 5,
+          }}
+        >
+          <View
+            style={{
+              width: 50,
+              height: 30,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 10,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>XÓa</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   return (
     <View>
       <Image

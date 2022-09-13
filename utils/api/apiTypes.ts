@@ -27,7 +27,7 @@ export type WaterUser = {
   status?: string;
   lastWaterMeterNumber?: 0;
   lastReadDate?: Date;
-  images?: string[];
+  images?: string[] | string;
   id?: string;
 };
 export type InfoResult = {

@@ -10,7 +10,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
-import { ColorSchemeName } from "react-native";
+import { ColorSchemeName, Pressable } from "react-native";
 import MainScreen from "../screens/Main";
 import CameraWaterScreen from "../screens/CameraWater";
 import ScanfQrCodeScreen from "../screens/CameraWater/ScanfQrCode";
@@ -28,9 +28,11 @@ import UseWaterRegisterScreen from "../screens/UseWaterRegister";
 import ListContractScreen from "../screens/ListContract";
 import AddContractScreen from "../screens/ListContract/AddContract";
 import DetailContractScreen from "../screens/ListContract/DetailContract";
+import AreaMapScreen from "../screens/AreaMap";
 
 import { blueColorApp } from "../constants/Colors";
 import ListWaterIndex from "../screens/ListWaterIndex";
+import Ionicons from "@expo/vector-icons/build/Ionicons";
 export default function Navigation({
   colorScheme,
 }: {
@@ -98,12 +100,31 @@ function RootNavigator() {
         <Stack.Screen
           name="KhuVucDoScreen"
           component={KhuVucDoScreen}
-          options={({ route }) => ({ title: route.params.tollAreaName })}
+          options={({ route }) => ({
+            title: route.params.tollAreaName,
+            headerRight: () => (
+              <Pressable
+                onPress={() => {}}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Ionicons
+                  name="map-outline"
+                  size={25}
+                  color="#fff"
+                  style={{ marginRight: 15 }}
+                />
+              </Pressable>
+            ),
+          })}
         />
         <Stack.Screen
           name="ChiTietSoDoScreen"
           component={ChiTietSoDoScreen}
-          options={({ route }) => ({ title: route.params.waterUserName })}
+          options={({ route }) => ({
+            title: route.params.waterUserName,
+          })}
         />
 
         <Stack.Screen
@@ -134,6 +155,14 @@ function RootNavigator() {
           name="DetailContract"
           component={DetailContractScreen}
           options={{ title: "Chi tiết hợp đồng" }}
+        />
+
+        <Stack.Screen
+          name="AreaMap"
+          component={AreaMapScreen}
+          options={({ route }) => ({
+            title: `Khu vực ` + route.params.locationArea.name,
+          })}
         />
       </Stack.Navigator>
     );

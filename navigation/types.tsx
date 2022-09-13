@@ -9,6 +9,7 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { LocationMaps, _Location } from "../screens/AreaMap";
 import { WaterUser } from "../utils/api/apiTypes";
 
 declare global {
@@ -36,7 +37,11 @@ export type RootStackParamList = {
     month: number;
     year: number;
   };
-  KhuVucDoScreen: { tollAreaId: string; tollAreaName: string };
+  KhuVucDoScreen: {
+    tollAreaId: string;
+    tollAreaName: string;
+    location?: _Location;
+  };
   ChiTietSoDoScreen: {
     waterUserId: string;
     waterUserName: string;
@@ -45,10 +50,11 @@ export type RootStackParamList = {
   UseWaterRegister: undefined;
   ListContract: undefined;
   ListWaterIndex: undefined;
-  AddContract:undefined
+  AddContract: undefined;
   DetailContract: {
     waterUser: WaterUser;
   };
+  AreaMap: LocationMaps;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
