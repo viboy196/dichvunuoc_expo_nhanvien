@@ -21,6 +21,7 @@ import ApiRequest from "../../../utils/api/Main/ApiRequest";
 import { useAppDispatch, useAppSelector } from "../../../redux/store/hooks";
 import ItemRole from "./ItemRole";
 import { logOut } from "../../../redux/features/auth/authSlices";
+import { removeAllPoint } from "../../../redux/features/PointsSlice";
 
 const widthIcon = (Layout.window.width - 20) / 4;
 
@@ -87,6 +88,42 @@ export default function TabHome({ navigation }: RootTabScreenProps<"TabHome">) {
     },
   ] as Array<TypeRole>;
 
+  const listCongViecQuanLyCongTy = [
+    {
+      name: "Quản lý tuyến ống",
+      imageSource: require("../../../assets/images/main/tabHome/request.png"),
+      onPress: () => {
+        navigation.navigate("WaterPipes");
+      },
+    },
+    {
+      name: "Xóa dữ liệu tuyến ống",
+      imageSource: require("../../../assets/images/main/tabHome/request.png"),
+      onPress: () => {
+        Alert.alert("Xác nhận", "Bạn muốn xóa dữ liệu tuyến ống", [
+          {
+            text: "Xác nhận",
+            onPress: () => {
+              dispatch(removeAllPoint());
+            },
+          },
+          {
+            text: "Thôi",
+          },
+        ]);
+      },
+    },
+    {
+      name: "Quản lý Danh mục",
+      imageSource: require("../../../assets/images/main/tabHome/request.png"),
+      onPress: () => {
+        navigation.navigate("Models");
+      },
+    },
+  ] as Array<TypeRole>;
+
+  console.log(listAppRole);
+
   useEffect(() => {
     if (token && UserId)
       ApiRequest.AppRoleGetByUser({ token, userId: UserId })
@@ -94,7 +131,6 @@ export default function TabHome({ navigation }: RootTabScreenProps<"TabHome">) {
           setLoading(false);
           if (res.code == "00") {
             console.log(res.result);
-
             setListAppRole(res.result);
           }
         })
@@ -266,6 +302,14 @@ export default function TabHome({ navigation }: RootTabScreenProps<"TabHome">) {
                 <ItemRole
                   description={item.description}
                   listTypeRole={listCongViecQuanLyHoSuDungNuoc}
+                />
+              );
+
+            if (item.name === "QuanLyCongTy")
+              return (
+                <ItemRole
+                  description={item.description}
+                  listTypeRole={listCongViecQuanLyCongTy}
                 />
               );
 

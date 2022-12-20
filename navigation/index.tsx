@@ -33,6 +33,8 @@ import AreaMapScreen from "../screens/AreaMap";
 import { blueColorApp } from "../constants/Colors";
 import ListWaterIndex from "../screens/ListWaterIndex";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import WaterPipes from "../screens/WaterPipes";
+import Models from "../screens/Models";
 export default function Navigation({
   colorScheme,
 }: {
@@ -162,6 +164,21 @@ function RootNavigator() {
           component={AreaMapScreen}
           options={({ route }) => ({
             title: `Khu vực ` + route.params.locationArea.name,
+          })}
+        />
+
+        <Stack.Screen
+          name="WaterPipes"
+          component={WaterPipes}
+          options={({ route }) => ({
+            title: "Quản lý tuyến ống",
+          })}
+        />
+        <Stack.Screen
+          name="Models"
+          component={Models}
+          options={({ route }) => ({
+            title: "Quản lý Danh mục",
           })}
         />
       </Stack.Navigator>

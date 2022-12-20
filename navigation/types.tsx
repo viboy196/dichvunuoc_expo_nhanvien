@@ -55,6 +55,10 @@ export type RootStackParamList = {
     waterUser: WaterUser;
   };
   AreaMap: LocationMaps;
+  WaterPipes: undefined;
+  
+  Models: undefined;
+
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =

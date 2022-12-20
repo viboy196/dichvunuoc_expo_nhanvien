@@ -18,7 +18,7 @@ const initialState = {
 } as NotificationsType;
 
 export const NotificationSlice = createSlice({
-  name: 'notification',
+  name: 'points',
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
