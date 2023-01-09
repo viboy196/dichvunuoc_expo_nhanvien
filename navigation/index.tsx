@@ -7,6 +7,7 @@ import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
+  NavigationContainerRef,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
@@ -41,18 +42,32 @@ import ModuleScreen from "../screens/ModuleScreen";
 import AddModuleScreen from "../screens/ModuleScreen/AddModuleScreen";
 import AddDevices from "../screens/ModuleScreen/AddDevices";
 import PointImageScreen from "../screens/WaterPipes/PointImageScreen";
+import Notification from "../Notification/Notification";
+
+export const navigationRef =
+  React.createRef<NavigationContainerRef<RootStackParamList>>();
+
+// export function getFullPath(data: { invoiceId: string }) {
+//   return navigationRef.current?.navigate("WaterInvoiceDetail", {
+//     invoiceId: data.invoiceId,
+//   });
+// }
 export default function Navigation({
   colorScheme,
 }: {
   colorScheme: ColorSchemeName;
 }) {
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-    >
-      <RootNavigator />
-    </NavigationContainer>
+    <>
+      <Notification />
+      <NavigationContainer
+        ref={navigationRef}
+        linking={LinkingConfiguration}
+        theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      >
+        <RootNavigator />
+      </NavigationContainer>
+    </>
   );
 }
 

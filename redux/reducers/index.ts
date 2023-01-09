@@ -9,6 +9,8 @@ import LineSlice from '../features/LineSlice';
 import ModelSlides from '../features/ModelSlides';
 import PointsSlice from '../features/PointsSlice';
 import  ModulesSlice  from './../features/ModuleSlice';
+import  NotificationSlice  from './../features/NotificationSlice';
+
 
 export default combineReducers({
   auth: authReducer,
@@ -17,6 +19,7 @@ export default combineReducers({
   lines:LineSlice,
   modules:ModulesSlice,
   devices:DeviceSlice,
-  imagePoint:ImagePointSlice
+  imagePoint:ImagePointSlice,
+  noti:NotificationSlice
 
 });
