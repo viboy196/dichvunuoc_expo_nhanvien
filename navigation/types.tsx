@@ -9,6 +9,9 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Region } from "react-native-maps";
+import { ModuleType } from "../redux/features/ModuleSlice";
+import { PointType } from "../redux/features/PointsSlice";
 import { LocationMaps, _Location } from "../screens/AreaMap";
 import { WaterUser } from "../utils/api/apiTypes";
 
@@ -56,9 +59,15 @@ export type RootStackParamList = {
   };
   AreaMap: LocationMaps;
   WaterPipes: undefined;
-  
+
   Models: undefined;
 
+  DrawLine: { pointStart: PointType; pointEnd: PointType; _region: Region };
+  FactoryManager: { title: string };
+  ModuleDetail: { data: ModuleType };
+  ModuleAdd: undefined;
+  AddDevices: undefined;
+  PointImage: { point: PointType };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =

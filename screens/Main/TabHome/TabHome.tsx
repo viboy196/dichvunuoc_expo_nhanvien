@@ -120,6 +120,15 @@ export default function TabHome({ navigation }: RootTabScreenProps<"TabHome">) {
         navigation.navigate("Models");
       },
     },
+    {
+      name: "Quản Lý Nhà máy",
+      imageSource: require("../../../assets/images/main/tabHome/request.png"),
+      onPress: () => {
+        navigation.navigate("FactoryManager", {
+          title: "Quản lý nhà máy nước Sông Hồng",
+        });
+      },
+    },
   ] as Array<TypeRole>;
 
   console.log(listAppRole);

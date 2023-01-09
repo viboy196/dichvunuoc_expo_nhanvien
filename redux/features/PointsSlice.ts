@@ -2,18 +2,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 
-export type TypePoint = 'điểm thu' | 'điểm nhà máy' | 'điểm trạm' | 'điểm van' | 'điểm đồng hồ tổng' | 'điểm đồng hồ hộ sử dụng';
+export type TypePoint = 'Đồng hồ doanh nghiệp' | 'Đồng hồ hộ dân' |'Đồng hồ tổng nhánh'|'Đồng hồ tổng tuyến'|'điểm thu' | 'điểm nhà máy' | 'điểm trạm' | 'điểm van' ;
 
 
 
 export type PointType = {
-  id:string;
+  id:string; // id Điểm
   latitude:number;
   longitude:number;
   name:string;
   listIdConnect?:string[]
   typePoint?:TypePoint;
   idConnect?:string;
+  idParent?:string;
 };
 
 export type ListPointType = {
@@ -24,7 +25,7 @@ const initialState = {
 } as ListPointType;
 
 export const PointsSlice = createSlice({
-  name: 'points',
+  name: 'devices',
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {

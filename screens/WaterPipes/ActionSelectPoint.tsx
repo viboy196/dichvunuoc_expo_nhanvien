@@ -11,6 +11,8 @@ export default function ActionSelectPoint(props: {
   const dispatch = useAppDispatch();
   const { pointSelect, butons } = props;
   const { listPoint } = useAppSelector((s) => s.points);
+  const { listData } = useAppSelector((s) => s.models);
+  const data = listData?.find((x) => x.id === pointSelect.idConnect);
 
   return (
     <View
@@ -31,7 +33,7 @@ export default function ActionSelectPoint(props: {
           textAlign: "center",
         }}
       >
-        {pointSelect.name}
+        {data ? data.name : pointSelect.name}
       </Text>
       {butons &&
         butons.map((x, index) => (

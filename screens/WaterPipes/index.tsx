@@ -5,16 +5,19 @@ import {
   TouchableOpacity,
   Alert,
   AlertButton,
+  Image,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { RootStackScreenProps } from "../../navigation/types";
 import MapView, {
   Callout,
   LatLng,
+  MapEvent,
   Marker,
   Polygon,
   Polyline,
   Region,
+  UrlTile,
 } from "react-native-maps";
 import { blueColorApp } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
@@ -23,10 +26,14 @@ import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import {
   PointType,
   removePoint,
+  TypePoint,
   updatePoint,
 } from "../../redux/features/PointsSlice";
 import ActionSelectPoint from "./ActionSelectPoint";
 import ButtonDone from "./ButtonDone";
+import ShowName from "./ShowName";
+import { useSelector } from "react-redux";
+import { addLine, LineType, removeLine } from "../../redux/features/LineSlice";
 
 type MapTypes =
   | "standard"
@@ -42,117 +49,151 @@ export default function AreaMap({
   const regionDefault = {
     latitude: 21.2130450170416,
     longitude: 105.50748394802213,
-    latitudeDelta: 0.00452679349725571,
-    longitudeDelta: 0.0026812031864977826,
+    latitudeDelta: 0.00852679349725571,
+    longitudeDelta: 0.0046812031864977826,
   };
+
   const [region, setRegion] = useState<Region>(regionDefault);
   const [mapType, setMapType] = useState<MapTypes>("standard");
   const [pointSelect, setPointSelect] = useState<PointType>();
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
 
-  const [staTusPointSelect, setStaTusPointSelect] = useState<1 | 2 | 3>();
+  const [staTusPointSelect, setStaTusPointSelect] = useState<1 | 2 | 3 | 4>();
 
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: Layout.window.width,
     height: Layout.window.height,
   });
   const [showModalSelect, setShowModalSelect] = useState<boolean>(false);
-  const { listPoint } = useAppSelector((s) => s.points);
-  const [arrLatLng, setArrLatLng] = useState<LatLng[][]>();
 
-  const [arrListPointLatLng, setArrListPointLatLng] = useState<LatLng[][][]>();
+  const [widthShow, setWidthShow] = useState<number>(-1);
+
+  const [pointShow, setPointShow] = useState<TypePoint>();
+
+  const { listPoint } = useAppSelector((s) => s.points);
 
   const dispatch = useAppDispatch();
   const _removePoint = (id: string) => {
-    dispatch(removePoint({ id: id }));
-  };
-  const calcDict = () => {
-    if (pointSelect === undefined) {
-      return -1;
+    const point = listPoint?.find((x) => x.id);
+    if (point) {
+      const arrLine = listLine?.filter((x) => x.id.indexOf(point?.id));
+      if (arrLine) {
+        arrLine.forEach((x) => {
+          dispatch(removeLine({ id: x.id }));
+        });
+      }
     }
-    const ax = region.latitude;
-    const ay = region.longitude;
-
-    const bx = pointSelect.latitude;
-    const by = pointSelect.longitude;
-
+    dispatch(removePoint({ id: id }));
+    setPointSelect(undefined);
+    setStaTusPointSelect(undefined);
+  };
+  const calcDict1 = (ax: number, ay: number, bx: number, by: number) => {
     return Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
   };
-  useEffect(() => {
-    if (pointSelect && region && staTusPointSelect === undefined) {
-      if (calcDict() > 0.0005) {
-        setPointSelect(undefined);
-        setStaTusPointSelect(undefined);
-      }
-    }
-  }, [pointSelect, region]);
-  console.log(pointSelect);
-  const genArrPointSelect = (item: PointType) => {
-    console.log("vào genArrPointSelect", item);
+  const { listLine } = useAppSelector((s) => s.lines);
 
-    const arr: LatLng[][] = [];
-    if (item?.listIdConnect) {
-      item.listIdConnect.forEach((x) => {
-        const itemNode = listPoint?.find((y) => y.id === x);
-        if (itemNode)
-          arr.push([
-            { latitude: item.latitude, longitude: item.longitude },
+  const onPressMaker = (item: PointType) => {
+    if (staTusPointSelect === 4 && pointSelect) {
+      if (pointSelect.listIdConnect?.includes(item.id)) {
+        Alert.alert(
+          "Vẽ đường ống",
+          `Nhấn xác nhận để vẽ đường ống nối 2 điểm đã chọn`,
+          [
             {
-              latitude: itemNode.latitude,
-              longitude: itemNode.longitude,
+              text: "Xác nhận",
+              onPress: () => {
+                navigation.navigate("DrawLine", {
+                  pointStart: pointSelect,
+                  pointEnd: item,
+                  _region: region,
+                });
+                setStaTusPointSelect(undefined);
+              },
             },
-          ]);
-      });
-    }
-
-    setArrLatLng(arr);
-  };
-  const genArrPointSelectArr = (item: PointType) => {
-    console.log("vào genArrPointSelect", item);
-
-    const arr: LatLng[][] = [];
-    if (item?.listIdConnect) {
-      item.listIdConnect.forEach((x) => {
-        const itemNode = listPoint?.find((y) => y.id === x);
-        if (itemNode)
-          arr.push([
-            { latitude: item.latitude, longitude: item.longitude },
             {
-              latitude: itemNode.latitude,
-              longitude: itemNode.longitude,
+              text: "Hủy",
+              onPress: () => {
+                setStaTusPointSelect(undefined);
+              },
             },
-          ]);
-      });
-    }
-
-    return arr;
-  };
-
-  useEffect(() => {
-    if (pointSelect) genArrPointSelect(pointSelect);
-  }, [pointSelect]);
-
-  useEffect(() => {
-    if (listPoint && pointSelect === undefined) {
-      const Arr: LatLng[][][] = [];
-      listPoint.forEach((x) => {
-        const _arr = genArrPointSelectArr(x);
-        Arr.push(_arr);
-      });
-      if (Arr.length > 0) {
-        setArrListPointLatLng(Arr);
+          ]
+        );
+      } else {
+        Alert.alert("Điểm không được liên kết");
       }
-    } else {
-      setArrListPointLatLng(undefined);
+      return;
     }
-  }, [listPoint, pointSelect]);
+    if (staTusPointSelect === 3 && pointSelect) {
+      if (item.id !== pointSelect?.id) {
+        const obj = {
+          ...pointSelect,
+          listIdConnect: pointSelect.listIdConnect
+            ? [
+                ...pointSelect.listIdConnect.filter((x) => x !== item.id),
+                item.id,
+              ]
+            : [item.id],
+        } as PointType;
+        const obj_x = {
+          ...item,
+          listIdConnect: item.listIdConnect
+            ? [
+                ...item.listIdConnect.filter((x) => x !== pointSelect.id),
+                pointSelect.id,
+              ]
+            : [pointSelect.id],
+        } as PointType;
+        setPointSelect(obj);
+        Alert.alert(
+          "",
+          `Liên kết điểm ${item.name} vào điểm ${pointSelect.name}`,
+          [
+            {
+              text: "Xác nhận",
+              onPress: () => {
+                dispatch(updatePoint({ item: obj }));
+
+                dispatch(updatePoint({ item: obj_x }));
+                const newLine: LineType = {
+                  id: `${obj.id}_${obj_x.id}`,
+                  listIdConnect: [obj.id, obj_x.id],
+                  listLatLng: [
+                    {
+                      latitude: obj.latitude,
+                      longitude: obj.longitude,
+                    },
+                    {
+                      latitude: obj_x.latitude,
+                      longitude: obj_x.longitude,
+                    },
+                  ],
+                  type: "init",
+                };
+                dispatch(addLine({ item: newLine }));
+
+                setStaTusPointSelect(undefined);
+              },
+            },
+            {
+              text: "Thôi",
+              onPress: () => {
+                setStaTusPointSelect(undefined);
+              },
+            },
+          ]
+        );
+      }
+      return;
+    }
+    setPointSelect(item);
+  };
 
   return (
     <View
       style={styles.container}
       onLayout={(event) => {
-        var { x, y, width, height } = event.nativeEvent.layout;
+        var { width, height } = event.nativeEvent.layout;
         console.log(width, height);
 
         setSize({ width, height });
@@ -176,120 +217,42 @@ export default function AreaMap({
               latitude: region.latitude,
               longitude: region.longitude,
             };
-            setPointSelect(x);
+            dispatch(updatePoint({ item: x }));
           }
           console.log(region);
         }}
+        onPress={(e) => {
+          const { latitude, longitude } = e.nativeEvent.coordinate;
+          console.log(e.nativeEvent);
+
+          if (pointSelect && staTusPointSelect === undefined) {
+            if (
+              calcDict1(
+                pointSelect.latitude,
+                pointSelect.longitude,
+                latitude,
+                longitude
+              ) > 0.0005
+            ) {
+              setPointSelect(undefined);
+              setStaTusPointSelect(undefined);
+            }
+          }
+        }}
       >
         {listPoint &&
-          listPoint
-            .filter((x) => x.id !== pointSelect?.id)
-            .map((item) => (
-              <Marker
-                coordinate={{
-                  latitude: item.latitude,
-                  longitude: item.longitude,
-                }}
-                pinColor="black"
-                key={item.id}
-                onPress={(e) => {
-                  if (staTusPointSelect === 3 && pointSelect) {
-                    if (item.id !== pointSelect?.id) {
-                      const obj = {
-                        ...pointSelect,
-                        listIdConnect: pointSelect.listIdConnect
-                          ? [
-                              ...pointSelect.listIdConnect.filter(
-                                (x) => x !== item.id
-                              ),
-                              item.id,
-                            ]
-                          : [item.id],
-                      } as PointType;
-                      const obj_x = {
-                        ...item,
-                        listIdConnect: item.listIdConnect
-                          ? [
-                              ...item.listIdConnect.filter(
-                                (x) => x !== pointSelect.id
-                              ),
-                              pointSelect.id,
-                            ]
-                          : [pointSelect.id],
-                      } as PointType;
-                      setPointSelect(obj);
-                      Alert.alert(
-                        "",
-                        `Liên kết điểm ${item.name} vào điểm ${pointSelect.name}`,
-                        [
-                          {
-                            text: "Xác nhận",
-                            onPress: () => {
-                              dispatch(updatePoint({ item: obj }));
-
-                              dispatch(updatePoint({ item: obj_x }));
-
-                              setStaTusPointSelect(undefined);
-                            },
-                          },
-                          {
-                            text: "Thôi",
-                          },
-                        ]
-                      );
-                    }
-                    return;
-                  }
-                  setPointSelect(item);
-                }}
-              ></Marker>
-            ))}
-        {pointSelect && (
-          <Marker
-            coordinate={{
-              latitude: pointSelect.latitude,
-              longitude: pointSelect.longitude,
-            }}
-            pinColor="black"
-            key={pointSelect.id}
-            onPress={(e) => {
-              setPointSelect(pointSelect);
-            }}
-          ></Marker>
-        )}
-
-        {arrLatLng &&
-          arrLatLng.map((item, index) => (
-            <Polyline
-              coordinates={item}
-              fillColor="rgba(0, 200, 0, 0.5)"
-              strokeColor="rgba(0,0,0,0.5)"
-              strokeWidth={4}
-              key={"Polyline" + index}
+          listPoint.map((item) => (
+            <ViewMaker
+              item={item}
+              onPressMaker={() => onPressMaker(item)}
+              key={item.id}
+              pointShow={pointShow}
             />
           ))}
-
-        {arrListPointLatLng &&
-          arrListPointLatLng.map((itemx, indexx) =>
-            itemx.map((item, index) => (
-              <Polyline
-                coordinates={item}
-                strokeColor="rgba(255,0,0,0.2)"
-                strokeWidth={1}
-                geodesic={true}
-                key={`Polyline${indexx}${index}`}
-              />
-            ))
-          )}
-
-        {/* {arrLatLng && (
-          <Polyline
-            coordinates={arrLatLng}
-            fillColor="rgba(0, 200, 0, 0.5)"
-            strokeColor="rgba(0,0,0,0.5)"
-            strokeWidth={4}
-          />
-        )} */}
+        {listLine &&
+          listLine.map((item) => (
+            <ViewLine widthShow={widthShow} item={item} key={item.id} />
+          ))}
       </MapView>
 
       <View
@@ -308,6 +271,12 @@ export default function AreaMap({
             pointSelect={pointSelect}
             butons={[
               {
+                text: "Xem Ảnh",
+                onPress: () => {
+                  navigation.navigate("PointImage", { point: pointSelect });
+                },
+              },
+              {
                 text: "Thay đổi tọa độ",
                 onPress: () => {
                   setStaTusPointSelect(1);
@@ -317,6 +286,17 @@ export default function AreaMap({
                   );
                 },
               },
+              {
+                text: "Vẽ đường ống",
+                onPress: () => {
+                  setStaTusPointSelect(4);
+                  Alert.alert(
+                    "Hướng dẫn",
+                    " Chọn điểm liên kết với điểm đã chọn \n để bắt đầu vẽ "
+                  );
+                },
+              },
+
               {
                 text: "Chi tiết",
                 onPress: () => {
@@ -333,11 +313,7 @@ export default function AreaMap({
                     [
                       {
                         text: "Xác nhận",
-                        onPress: () => {
-                          dispatch(removePoint({ id: pointSelect.id }));
-                          setPointSelect(undefined);
-                          setStaTusPointSelect(undefined);
-                        },
+                        onPress: () => _removePoint(pointSelect.id),
                       },
                       {
                         text: "Thôi",
@@ -350,23 +326,6 @@ export default function AreaMap({
                 text: "Nối điểm",
                 onPress: () => {
                   setStaTusPointSelect(3);
-                  //   Alert.alert(
-                  //     "Xóa điểm",
-                  //     "Xác nhận xóa điểm :" + pointSelect.name,
-                  //     [
-                  //       {
-                  //         text: "Xác nhận",
-                  //         onPress: () => {
-                  //           dispatch(removePoint({ id: pointSelect.id }));
-                  //           setPointSelect(undefined);
-                  //           setStaTusPointSelect(undefined);
-                  //         },
-                  //       },
-                  //       {
-                  //         text: "Thôi",
-                  //       },
-                  //     ]
-                  //   );
                 },
               },
             ]}
@@ -406,7 +365,20 @@ export default function AreaMap({
       </View>
       <ButtonDone
         staTusPointSelect={staTusPointSelect}
+        setWidthShow={setWidthShow}
+        setPointShow={setPointShow}
         onPress={() => {
+          if (staTusPointSelect === 1) {
+            if (pointSelect) {
+              setPointSelect(undefined);
+              setStaTusPointSelect(undefined);
+            }
+            return;
+          }
+          setShowModalSelect(true);
+          setIsEdit(false);
+        }}
+        onCance={() => {
           if (staTusPointSelect === 1) {
             if (pointSelect) {
               dispatch(updatePoint({ item: pointSelect }));
@@ -415,8 +387,8 @@ export default function AreaMap({
             }
             return;
           }
-          setShowModalSelect(true);
-          setIsEdit(false);
+          setPointSelect(undefined);
+          setStaTusPointSelect(undefined);
         }}
       />
       {showModalSelect && (
@@ -456,3 +428,81 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 });
+
+const ViewLine = (props: { item: LineType; widthShow: number }) => {
+  const { item } = props;
+  const { listPoint } = useAppSelector((s) => s.points);
+  const p1 = listPoint?.find((x) => x.id === item.listIdConnect[0]);
+
+  const p2 = listPoint?.find((x) => x.id === item.listIdConnect[1]);
+  let arr = [...props.item.listLatLng];
+  //console.log("arr_F" + item.id, arr.length);
+  arr.splice(arr.length - 1, 1);
+  arr.splice(0, 1);
+  if (p1 && p2) {
+    arr = [
+      { latitude: p1.latitude, longitude: p1.longitude },
+      ...arr,
+      { latitude: p2.latitude, longitude: p2.longitude },
+    ];
+  }
+  const [isClick, setIsClick] = useState<boolean>(false);
+  if (props.widthShow > 0 && props.widthShow !== props.item.width) {
+    return <></>;
+  }
+  return (
+    <>
+      <Polyline
+        coordinates={arr}
+        key={item.id}
+        strokeColor={item.color ? item.color : "red"}
+        strokeWidth={
+          isClick
+            ? item.width
+              ? item.width * 1.5
+              : 1.5
+            : item.width
+            ? item.width
+            : 1
+        }
+        lineDashPattern={item.type === "success" ? undefined : [1]}
+        tappable={true}
+        onPress={(e) => {
+          setIsClick(!isClick);
+          console.log(e.nativeEvent);
+        }}
+      />
+    </>
+  );
+};
+
+const ViewMaker = (props: {
+  onPressMaker: () => void;
+  item: PointType;
+  pointShow?: string;
+}) => {
+  if (
+    props.pointShow !== undefined &&
+    props.pointShow !== props.item.typePoint
+  ) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <Marker
+        coordinate={{
+          latitude: props.item.latitude,
+          longitude: props.item.longitude,
+        }}
+        pinColor="black"
+        onPress={(e) => {
+          props.onPressMaker();
+        }}
+        zIndex={1}
+      >
+        <ShowName point={props.item} />
+      </Marker>
+    </>
+  );
+};

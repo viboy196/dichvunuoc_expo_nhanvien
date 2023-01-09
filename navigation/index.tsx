@@ -35,6 +35,12 @@ import ListWaterIndex from "../screens/ListWaterIndex";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import WaterPipes from "../screens/WaterPipes";
 import Models from "../screens/Models";
+import DrawnLine from "../screens/DrawnLine";
+import FactoryManager from "../screens/FactoryManager";
+import ModuleScreen from "../screens/ModuleScreen";
+import AddModuleScreen from "../screens/ModuleScreen/AddModuleScreen";
+import AddDevices from "../screens/ModuleScreen/AddDevices";
+import PointImageScreen from "../screens/WaterPipes/PointImageScreen";
 export default function Navigation({
   colorScheme,
 }: {
@@ -71,7 +77,6 @@ function RootNavigator() {
           component={MainScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="CameraWaterScreen"
           component={CameraWaterScreen}
@@ -86,7 +91,6 @@ function RootNavigator() {
             title: "Quét mã đồng hồ nước",
           }}
         />
-
         <Stack.Screen
           name="InfoDetail"
           component={InfoDetailScreen}
@@ -128,37 +132,31 @@ function RootNavigator() {
             title: route.params.waterUserName,
           })}
         />
-
         <Stack.Screen
           name="UseWaterRegister"
           component={UseWaterRegisterScreen}
           options={{ title: "Yêu cầu đăng ký nước" }}
         />
-
         <Stack.Screen
           name="ListContract"
           component={ListContractScreen}
           options={{ title: "Danh sách hợp đồng" }}
         />
-
         <Stack.Screen
           name="ListWaterIndex"
           component={ListWaterIndex}
           options={{ title: "Danh sách chỉ số nước" }}
         />
-
         <Stack.Screen
           name="AddContract"
           component={AddContractScreen}
           options={{ title: "Thêm mới hợp đồng" }}
         />
-
         <Stack.Screen
           name="DetailContract"
           component={DetailContractScreen}
           options={{ title: "Chi tiết hợp đồng" }}
         />
-
         <Stack.Screen
           name="AreaMap"
           component={AreaMapScreen}
@@ -166,7 +164,6 @@ function RootNavigator() {
             title: `Khu vực ` + route.params.locationArea.name,
           })}
         />
-
         <Stack.Screen
           name="WaterPipes"
           component={WaterPipes}
@@ -179,6 +176,49 @@ function RootNavigator() {
           component={Models}
           options={({ route }) => ({
             title: "Quản lý Danh mục",
+          })}
+        />
+        <Stack.Screen
+          name="DrawLine"
+          component={DrawnLine}
+          options={({ route }) => ({
+            title: "Vẽ tuyến ống",
+          })}
+        />
+        <Stack.Screen
+          name="FactoryManager"
+          component={FactoryManager}
+          options={({ route }) => ({
+            title: route.params.title,
+          })}
+        />
+        <Stack.Screen
+          name="ModuleDetail"
+          component={ModuleScreen}
+          options={({ route }) => ({
+            title: "Module " + route.params.data.name,
+          })}
+        />
+        <Stack.Screen
+          name="ModuleAdd"
+          component={AddModuleScreen}
+          options={({ route }) => ({
+            title: "Thêm mới Module",
+          })}
+        />
+
+        <Stack.Screen
+          name="AddDevices"
+          component={AddDevices}
+          options={({ route }) => ({
+            title: "Thêm mới Thiết bị",
+          })}
+        />
+        <Stack.Screen
+          name="PointImage"
+          component={PointImageScreen}
+          options={({ route }) => ({
+            title: route.params.point.name,
           })}
         />
       </Stack.Navigator>

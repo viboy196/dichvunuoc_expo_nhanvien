@@ -12,6 +12,7 @@ import TestScreen from "./screens/test/test";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "./redux/store/store";
+import PointImageScreen from "./screens/WaterPipes/PointImageScreen";
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -25,7 +26,6 @@ export default function App() {
         <PersistGate loading={null} persistor={persistor}>
           <SafeAreaProvider>
             <Navigation colorScheme={colorScheme} />
-            {/* <TestScreen /> */}
             <StatusBar />
           </SafeAreaProvider>
         </PersistGate>

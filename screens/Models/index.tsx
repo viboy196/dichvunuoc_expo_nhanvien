@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState } from "react";
 import { useAppSelector } from "../../redux/store/hooks";
 import ItemModel from "./ItemModel";
@@ -48,13 +48,15 @@ export default function Models() {
         </TouchableOpacity>
       </View>
       <View style={{ flex: 1 }}>
-        {listData &&
-          listData.map((item) => (
-            <ItemModel item={item} key={"item" + item.id} />
-          ))}
-        {listData === undefined && (
-          <Text style={{ padding: 10 }}>Danh sách trống</Text>
-        )}
+        <ScrollView>
+          {listData &&
+            listData.map((item) => (
+              <ItemModel item={item} key={"item" + item.id} />
+            ))}
+          {listData === undefined && (
+            <Text style={{ padding: 10 }}>Danh sách trống</Text>
+          )}
+        </ScrollView>
       </View>
     </View>
   );

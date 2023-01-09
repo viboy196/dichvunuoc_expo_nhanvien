@@ -11,6 +11,7 @@ export type ModelType = {
   id:string;
   type?:TypePoint
   name?:string,
+  idParent?:string
 };
 
 export type ListModelType = {
